@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17171a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sentence PRNG">
+<link rel="manifest" href="manifest.json">
+<title>Sentence PRNG</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f4f6;color:#17171a;padding:20px;display:flex;justify-content:center}
+.app{width:min(520px,100%);margin:auto;background:#fff;border-radius:24px;padding:28px;box-shadow:0 12px 40px #00000018}
+h1{margin:0 0 8px;font-size:28px}.sub{margin:0 0 24px;color:#666;line-height:1.45}
+label{display:block;font-weight:600;margin:16px 0 8px}
+textarea,input{width:100%;border:1px solid #d8d8dd;border-radius:12px;padding:13px;font:inherit;outline:none;background:#fafafa}
+textarea:focus,input:focus{border-color:#777;background:#fff}.row{display:flex;gap:12px;align-items:end}.length{width:120px}
+button{border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:700;cursor:pointer;background:#17171a;color:#fff}
+.generate{width:100%;margin-top:20px}.result{margin-top:22px;padding:18px;border-radius:14px;background:#f1f1f3;display:flex;gap:10px;align-items:center}
+#output{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;word-break:break-all}
+.copy{white-space:nowrap}.note{font-size:12px;color:#777;margin-top:14px;line-height:1.4}
+</style>
+</head>
+<body>
+<main class="app">
+<h1>Sentence PRNG</h1>
+<p class="sub">Turn a sentence into a repeatable random-looking string of letters and numbers.</p>
+<label for="seed">Sentence / Seed</label>
+<textarea id="seed" rows="3" placeholder="Type a sentence..."></textarea>
+<div class="row"><div class="length"><label for="length">Length</label><input id="length" type="number" min="1" max="256" value="8"></div><div style="flex:1"></div></div>
+<button class="generate" id="generate">Generate</button>
+<div class="result"><div id="output">—</div><button class="copy" id="copy">Copy</button></div>
+<div class="note">Same sentence + same length = same result. This is for randomization, not passwords, encryption, or security-sensitive secrets.</div>
+</main>
+<script>
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19}return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^=h>>>16)>>>0}}
+function mulberry32(a){return()=>{let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function generate(){const s=document.getElementById("seed").value,n=Math.max(1,Math.min(256,parseInt(document.getElementById("length").value)||8)),r=mulberry32(xmur3(s)()),c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";let o="";for(let i=0;i<n;i++)o+=c[Math.floor(r()*c.length)];document.getElementById("output").textContent=o}
+document.getElementById("generate").onclick=generate;
+document.getElementById("copy").onclick=async()=>{let o=document.getElementById("output").textContent;if(o==="—")return;try{await navigator.clipboard.writeText(o);let b=document.getElementById("copy"),t=b.textContent;b.textContent="Copied!";setTimeout(()=>b.textContent=t,1000)}catch{}};
+document.getElementById("seed").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter")generate()});
+</script>
+</body></html>
